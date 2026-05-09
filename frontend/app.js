@@ -1,8 +1,10 @@
-let tickets = JSON.parse(localStorage.getItem("tickets") || "[]");
+let tickets = [];
 let editId = null;
 
 let sortField = null;
 let sortAsc = true;
+
+const API = "http://localhost:3000/api/tickets";
 
 const form = document.getElementById("ticketForm");
 const tableBody = document.getElementById("ticketsTable");
@@ -20,6 +22,13 @@ const statusError = document.getElementById("statusError");
 const priorityError = document.getElementById("priorityError");
 const messageError = document.getElementById("messageError");
 const authorError = document.getElementById("authorError");
+
+async function loadTickets() {
+  const res = await fetch(API);
+  const data = await res.json();
+  tickets = data.items || [];
+  render();
+}
 
 function render() {
   tableBody.innerHTML = "";
@@ -97,8 +106,6 @@ function render() {
     tableBody.appendChild(row);
   });
 
-  localStorage.setItem("tickets", JSON.stringify(tickets));
-
   document.querySelectorAll("th[data-field]").forEach(th => {
     th.classList.remove("active-sort");
 
@@ -144,23 +151,12 @@ function clearErrors() {
   document.querySelectorAll(".error-text").forEach(e => e.textContent = "");
 }
 
-form.addEventListener("submit", e => {
+form.addEventListener("submit", async e => {
   e.preventDefault();
 
   if (!validate()) return;
 
-  const duplicate = tickets.some(t =>
-    t.subject.toLowerCase() === subjectInput.value.trim().toLowerCase() &&
-    t.author.toLowerCase() === authorInput.value.trim().toLowerCase()
-  );
-
-  if (!editId && duplicate) {
-    alert("Така заявка вже існує");
-    return;
-  }
-
   const ticket = {
-    id: editId || Date.now(),
     subject: subjectInput.value.trim(),
     status: statusSelect.value,
     priority: prioritySelect.value,
@@ -169,15 +165,49 @@ form.addEventListener("submit", e => {
   };
 
   if (editId) {
-    tickets = tickets.map(t => t.id === editId ? ticket : t);
+    await fetch(`${API}/${editId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(ticket)
+    });
+
     editId = null;
   } else {
-    tickets.push(ticket);
+    await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(ticket)
+    });
   }
 
   form.reset();
-  render();
+
+  await loadTickets();
 });
+
+tableBody.addEventListener("click", async e => {
+  const edit = e.target.dataset.edit;
+  const del = e.target.dataset.delete;
+
+  if (del) {
+    await fetch(`${API}/${del}`, { method: "DELETE" });
+    await loadTickets();
+  }
+
+  if (edit) {
+    const t = tickets.find(x => x.id == edit);
+    if (!t) return;
+
+    subjectInput.value = t.subject;
+    statusSelect.value = t.status;
+    prioritySelect.value = t.priority;
+    messageInput.value = t.message;
+    authorInput.value = t.author;
+
+    editId = t.id;
+  }
+});
+
 
 resetBtn.addEventListener("click", () => {
   form.reset();
@@ -192,7 +222,7 @@ document.querySelectorAll("th[data-field]").forEach(th => {
     const field = th.dataset.field;
 
     if (sortField === field) {
-      sortField = null; 
+      sortField = null;
     } else {
       sortField = field;
       sortAsc = true;
@@ -202,29 +232,6 @@ document.querySelectorAll("th[data-field]").forEach(th => {
   });
 });
 
-tableBody.addEventListener("click", e => {
-  const edit = e.target.dataset.edit;
-  const del = e.target.dataset.delete;
-
-  if (del) {
-    tickets = tickets.filter(t => t.id != del);
-    render();
-  }
-
-  if (edit) {
-    const t = tickets.find(x => x.id == edit);
-
-    subjectInput.value = t.subject;
-    statusSelect.value = t.status;
-    prioritySelect.value = t.priority;
-    messageInput.value = t.message;
-    authorInput.value = t.author;
-
-    editId = t.id;
-    render();
-  }
-});
-
-render();
+loadTickets();
 
 
