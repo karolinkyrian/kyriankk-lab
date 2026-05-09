@@ -4,13 +4,9 @@
 **Тема:** Заявки в технічну підтримку для студентів  
 **Ключова сутність:** Заявка  
 
----
-
 ## Опис проєкту
 
 Веб-застосунок для створення та керування заявками в технічну підтримку студентів. Реалізовано CRUD-операції, пошук, сортування та збереження даних у браузері.
-
----
 
 ## Функціонал
 
@@ -28,7 +24,6 @@
 - Збереження даних у localStorage  
 - Автоматичне відновлення даних після перезавантаження сторінки
   
----
 ## Запуск проєкту
 
 Запуск локального сервера:
@@ -36,3 +31,51 @@ python -m http.server 8080
 
 Відкриття у браузері:
 http://localhost:8080/frontend/
+
+---
+
+# Лабораторна робота №2. Бекенд без БД 
+## Варіант №9
+### Як запустити бекенд
+
+1. Відкрийте термінал і перейдіть у папку бекенду:
+   ```bash
+   cd backend
+2. Встановіть залежності:
+   ```bash
+   npm install
+3. Запустіть сервер у режимі розробки:
+   ```bash
+   npm run dev
+Сервер запуститься за адресою: http://localhost:3000
+
+### Реалізовані сутності
+Users:т (поля: id, name, email)
+
+Tickets: (id, title, status, priority)
+
+### Реалізовані можливості
+REST API без бази даних
+зберігання даних в оперативній пам’яті
+DTO
+middleware logger
+centralized error handler
+валідація запитів
+pagination
+filtering
+sorting
+PATCH метод
+
+### Приклади запитів (cURL)
+1. Створити нове чергування (Успіх - 201 Created):
+   ```bash
+   curl -i -X POST http://localhost:3000/api/users -H "Content-Type: application/json" -d "{\"name\":\"Test\",\"email\":\"test@mail.com\"}"
+2. Створити ticket (201 Created):
+   ```bash
+   curl -i -X POST http://localhost:3000/api/tickets -H "Content-Type: application/json" -d "{\"title\":\"Bug\",\"status\":\"open\",\"priority\":\"high\"}"
+3. Отримати список користувачів (200 OK):
+   ```bash
+   curl -i http://localhost:3000/api/users
+4. Помилка валідації (400 Bad Request):
+   ```bash
+   curl -i -X POST http://localhost:3000/api/tickets -H "Content-Type: application/json" -d "{\"title\":\"\"}"
