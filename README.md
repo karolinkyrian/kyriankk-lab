@@ -50,21 +50,21 @@ http://localhost:8080/frontend/
 Сервер запуститься за адресою: http://localhost:3000
 
 ### Реалізовані сутності
-Users:т (поля: id, name, email)
+Users:т (id, name, email)
 
 Tickets: (id, title, status, priority)
 
 ### Реалізовані можливості
-REST API без бази даних
-зберігання даних в оперативній пам’яті
-DTO
-middleware logger
-centralized error handler
-валідація запитів
-pagination
-filtering
-sorting
-PATCH метод
+- REST API без бази даних
+- зберігання даних в оперативній пам’яті
+- DTO
+- middleware logger
+- centralized error handler
+- валідація запитів
+- pagination
+- filtering
+- sorting
+- PATCH метод
 
 ### Приклади запитів (cURL)
 1. Створити нове чергування (Успіх - 201 Created):
