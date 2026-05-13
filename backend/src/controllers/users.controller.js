@@ -1,26 +1,96 @@
-const service = require("../services/users.service");
+const userService = require("../services/users.service");
 
-exports.getAll = (req, res) => {
-  res.json(service.getAll(req.query));
+exports.create = async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({
+        error: "Missing required fields",
+      });
+    }
+
+    const user = await userService.create(req.body);
+
+    res.status(201).json({
+      data: user,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.getById = (req, res) => {
-  res.json(service.getById(req.params.id));
+exports.getAll = async (req, res, next) => {
+  try {
+    const data = await userService.getAll(req.query);
+
+    res.json({
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.create = (req, res) => {
-  res.status(201).json(service.create(req.body));
+exports.getById = async (req, res, next) => {
+  try {
+    const user = await userService.getById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    res.json({
+      data: user,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.update = (req, res) => {
-  res.json(service.update(req.params.id, req.body));
+exports.update = async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({
+        error: "Missing required fields",
+      });
+    }
+
+    const updated = await userService.update(req.params.id, req.body);
+
+    if (!updated) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    res.json({
+      data: updated,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.patch = (req, res) => {
-  res.json(service.patch(req.params.id, req.body));
-};
+exports.delete = async (req, res, next) => {
+  try {
+    const deleted = await userService.delete(req.params.id);
 
-exports.delete = (req, res) => {
-  service.delete(req.params.id);
-  res.sendStatus(204);
+    if (!deleted) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      deleted: true,
+    });
+  } catch (err) {
+    next(err);
+  }
 };

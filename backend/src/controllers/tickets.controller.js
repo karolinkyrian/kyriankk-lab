@@ -1,26 +1,176 @@
-const service = require("../services/tickets.service");
+const ticketsService = require(
+  "../services/tickets.service"
+);
 
-exports.getAll = (req, res) => {
-  res.json(service.getAll(req.query));
-};
+async function getAll(req, res, next) {
+  try {
+    const data =
+      await ticketsService.getAllTickets(
+        req.query.status,
+        req.query.sort,
+        req.query.order
+      );
 
-exports.getById = (req, res) => {
-  res.json(service.getById(req.params.id));
-};
+    res.json({
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
 
-exports.create = (req, res) => {
-  res.status(201).json(service.create(req.body));
-};
+async function getById(req, res, next) {
+  try {
+    const ticket =
+      await ticketsService.getTicketById(
+        req.params.id
+      );
 
-exports.update = (req, res) => {
-  res.json(service.update(req.params.id, req.body));
-};
+    if (!ticket) {
+      return res.status(404).json({
+        error: "Ticket not found",
+      });
+    }
 
-exports.patch = (req, res) => {
-  res.json(service.patch(req.params.id, req.body));
-};
+    res.json({
+      data: ticket,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
 
-exports.delete = (req, res) => {
-  service.delete(req.params.id);
-  res.sendStatus(204);
+async function create(req, res, next) {
+  try {
+    const {
+      userId,
+      subject,
+      description,
+      status,
+      priority,
+    } = req.body;
+
+    if (
+      !userId ||
+      !subject ||
+      !description ||
+      !status ||
+      !priority
+    ) {
+      return res.status(400).json({
+        error: "Missing required fields",
+      });
+    }
+
+    const created =
+      await ticketsService.createTicket(
+        req.body
+      );
+
+    res.status(201).json({
+      data: created,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function update(req, res, next) {
+  try {
+    const {
+      subject,
+      description,
+      status,
+      priority,
+    } = req.body;
+
+    if (
+      !subject ||
+      !description ||
+      !status ||
+      !priority
+    ) {
+      return res.status(400).json({
+        error: "Missing required fields",
+      });
+    }
+
+    const updated =
+      await ticketsService.updateTicket(
+        req.params.id,
+        subject,
+        description,
+        status,
+        priority
+      );
+
+    if (!updated) {
+      return res.status(404).json({
+        error: "Ticket not found",
+      });
+    }
+
+    res.json({
+      data: updated,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function remove(req, res, next) {
+  try {
+    const deleted =
+      await ticketsService.deleteTicket(
+        req.params.id
+      );
+
+    if (!deleted) {
+      return res.status(404).json({
+        error: "Ticket not found",
+      });
+    }
+
+    res.json({
+      success: true,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getFull(req, res, next) {
+  try {
+    const data =
+      await ticketsService.getTicketsWithUsers();
+
+    res.json({
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getStats(req, res, next) {
+  try {
+    const data =
+      await ticketsService.getTicketsStats();
+
+    res.json({
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+  getFull,
+  getStats,
 };

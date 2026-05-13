@@ -1,31 +1,40 @@
 const express = require("express");
 
-const userRoutes = require("./routes/users.routes");
-const ticketRoutes = require("./routes/tickets.routes");
+const ticketsRoutes = require("./routes/tickets.routes");
+const usersRoutes = require("./routes/users.routes");
+const messagesRoutes = require("./routes/ticketMessages.routes");
 
-const logger = require("./middleware/logger.middleware");
-const errorHandler = require("./middleware/error.middleware");
+const { errorHandler } = require("./middleware/error.middleware");
+const { initDb } = require("./db/initDb");
 
 const app = express();
-
-const cors = require("cors");
-
-app.use(cors({
-  origin: "http://localhost:8080"
-}));
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(logger);
 
-app.use("/api/users", userRoutes);
-app.use("/api/tickets", ticketRoutes);
-
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok"
+  });
 });
+
+app.use("/api/tickets", ticketsRoutes);
+app.use("/api/users", usersRoutes);
+app.use("/api/messages", messagesRoutes);
 
 app.use(errorHandler);
 
-app.listen(3000, () => {
-  console.log("Server running: http://localhost:3000");
-});
+async function bootstrap() {
+  try {
+    await initDb();
+
+    app.listen(PORT, () => {
+      console.log(`Server started on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("Server startup failed:", err);
+    process.exit(1);
+  }
+}
+
+bootstrap();
