@@ -1,6 +1,5 @@
 let tickets = [];
 let editId = null;
-
 let sortField = null;
 let sortAsc = true;
 
@@ -15,77 +14,52 @@ const subjectInput = document.getElementById("subjectInput");
 const statusSelect = document.getElementById("statusSelect");
 const prioritySelect = document.getElementById("prioritySelect");
 const messageInput = document.getElementById("messageInput");
-const authorInput = document.getElementById("authorInput");
 
 const subjectError = document.getElementById("subjectError");
 const statusError = document.getElementById("statusError");
 const priorityError = document.getElementById("priorityError");
 const messageError = document.getElementById("messageError");
-const authorError = document.getElementById("authorError");
 
 async function loadTickets() {
-  const res = await fetch(API);
-  const data = await res.json();
-  tickets = data.items || [];
-  render();
+  let url = `${API}/full`;
+
+  try {
+    const res = await fetch(url);
+    const result = await res.json();
+    tickets = result.data || [];
+
+    if (sortField) {
+      tickets.sort((a, b) => {
+        let valA = a[sortField] ? a[sortField].toString().toLowerCase() : "";
+        let valB = b[sortField] ? b[sortField].toString().toLowerCase() : "";
+        if (valA < valB) return sortAsc ? -1 : 1;
+        if (valA > valB) return sortAsc ? 1 : -1;
+        return 0;
+      });
+    }
+
+    render();
+  } catch (error) {
+    console.error("Помилка завантаження тікетів:", error);
+  }
 }
 
 function render() {
   tableBody.innerHTML = "";
 
   let data = [...tickets];
-
   const query = searchInput.value.toLowerCase().trim();
+
   if (query) {
-    data = data.filter(t =>
-      t.subject.toLowerCase().includes(query) ||
-      t.author.toLowerCase().includes(query)
-    );
-  }
-
-  if (sortField) {
-
-    const statusOrder = {
-      "new": 1,
-      "inprogress": 2,
-      "done": 3
-    };
-
-    const priorityOrder = {
-      "low": 1,
-      "medium": 2,
-      "high": 3
-    };
-
-    data.sort((a, b) => {
-      let A, B;
-
-      switch (sortField) {
-
-        case "subject":
-        case "author":
-          A = a[sortField].toLowerCase();
-          B = b[sortField].toLowerCase();
-          break;
-
-        case "status":
-          A = statusOrder[String(a.status).toLowerCase()] || 0;
-          B = statusOrder[String(b.status).toLowerCase()] || 0;
-          break;
-
-        case "priority":
-          A = priorityOrder[String(a.priority).toLowerCase()] || 0;
-          B = priorityOrder[String(b.priority).toLowerCase()] || 0;
-          break;
-      }
-
-      if (A < B) return sortAsc ? -1 : 1;
-      if (A > B) return sortAsc ? 1 : -1;
-      return 0;
+    data = data.filter((ticket) => {
+      return (
+        ticket.subject.toLowerCase().includes(query) ||
+        (ticket.userName && ticket.userName.toLowerCase().includes(query))
+      );
     });
   }
 
-  data.forEach(ticket => {
+  data.forEach((ticket) => {
     const row = document.createElement("tr");
 
     if (ticket.id === editId) {
@@ -96,7 +70,7 @@ function render() {
       <td>${ticket.subject}</td>
       <td>${ticket.status}</td>
       <td>${ticket.priority}</td>
-      <td>${ticket.author}</td>
+      <td>${ticket.userName}</td>
       <td>
         <button data-edit="${ticket.id}">Редагувати</button>
         <button data-delete="${ticket.id}">Видалити</button>
@@ -106,13 +80,16 @@ function render() {
     tableBody.appendChild(row);
   });
 
-  document.querySelectorAll("th[data-field]").forEach(th => {
+  document.querySelectorAll("th[data-field]").forEach((th) => {
     th.classList.remove("active-sort");
-
-    if (sortField && th.dataset.field === sortField) {
+    if (sortField === th.dataset.field) {
       th.classList.add("active-sort");
     }
   });
+}
+
+function clearErrors() {
+  document.querySelectorAll(".error-text").forEach((e) => (e.textContent = ""));
 }
 
 function validate() {
@@ -139,99 +116,98 @@ function validate() {
     valid = false;
   }
 
-  if (authorInput.value.trim().length < 2) {
-    authorError.textContent = "Мінімум 2 символи";
-    valid = false;
-  }
-
   return valid;
 }
 
-function clearErrors() {
-  document.querySelectorAll(".error-text").forEach(e => e.textContent = "");
-}
-
-form.addEventListener("submit", async e => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  if (!validate()) return;
+  if (!validate()) {
+    return;
+  }
 
   const ticket = {
+    userId: 1, 
     subject: subjectInput.value.trim(),
+    description: messageInput.value.trim(),
     status: statusSelect.value,
     priority: prioritySelect.value,
-    message: messageInput.value.trim(),
-    author: authorInput.value.trim()
   };
 
-  if (editId) {
-    await fetch(`${API}/${editId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(ticket)
-    });
+  try {
+    if (editId) {
+      await fetch(`${API}/${editId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ticket),
+      });
+      editId = null;
+    } else {
+      await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ticket),
+      });
+    }
 
-    editId = null;
-  } else {
-    await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(ticket)
-    });
-  }
-
-  form.reset();
-
-  await loadTickets();
-});
-
-tableBody.addEventListener("click", async e => {
-  const edit = e.target.dataset.edit;
-  const del = e.target.dataset.delete;
-
-  if (del) {
-    await fetch(`${API}/${del}`, { method: "DELETE" });
+    form.reset();
+    clearErrors();
     await loadTickets();
-  }
-
-  if (edit) {
-    const t = tickets.find(x => x.id == edit);
-    if (!t) return;
-
-    subjectInput.value = t.subject;
-    statusSelect.value = t.status;
-    prioritySelect.value = t.priority;
-    messageInput.value = t.message;
-    authorInput.value = t.author;
-
-    editId = t.id;
+  } catch (error) {
+    console.error("Помилка збереження:", error);
   }
 });
 
+tableBody.addEventListener("click", async (e) => {
+  const editIdValue = e.target.dataset.edit;
+  const deleteIdValue = e.target.dataset.delete;
+
+  if (deleteIdValue) {
+    try {
+      await fetch(`${API}/${deleteIdValue}`, { method: "DELETE" });
+      await loadTickets();
+    } catch (error) {
+      console.error("Помилка видалення:", error);
+    }
+  }
+
+  if (editIdValue) {
+    const ticket = tickets.find((t) => t.id == editIdValue);
+    if (!ticket) return;
+
+    subjectInput.value = ticket.subject;
+    statusSelect.value = ticket.status;
+    prioritySelect.value = ticket.priority;
+    messageInput.value = ticket.description;
+    
+    editId = ticket.id;
+    render();
+  }
+});
 
 resetBtn.addEventListener("click", () => {
   form.reset();
-  editId = null;
   clearErrors();
+  editId = null;
+  render();
 });
 
 searchInput.addEventListener("input", render);
 
-document.querySelectorAll("th[data-field]").forEach(th => {
-  th.addEventListener("click", () => {
+document.querySelectorAll("th[data-field]").forEach((th) => {
+  th.addEventListener("click", async () => {
     const field = th.dataset.field;
 
     if (sortField === field) {
-      sortField = null;
+      sortAsc = !sortAsc;
     } else {
       sortField = field;
       sortAsc = true;
     }
 
-    render();
+    await loadTickets();
   });
 });
 
 loadTickets();
-
 
