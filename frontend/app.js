@@ -210,4 +210,3 @@ document.querySelectorAll("th[data-field]").forEach((th) => {
 });
 
 loadTickets();
-
