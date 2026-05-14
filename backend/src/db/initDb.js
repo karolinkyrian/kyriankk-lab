@@ -93,8 +93,9 @@ async function initDb() {
 
       await run(`
         INSERT INTO Users (name, email, createdAt) VALUES 
-        ('Karolina Kyrian', 'karolina@gmail.com', '${now}'),
+        ('Kyrian Karolina', 'karolina@gmail.com', '${now}'),
         ('Shevcova Inna', 'inna@gmail.com', '${now}'),
+        ('Chernishova Anna', 'anna@gmail.com', '${now}'),
         ('Sidorenko Polina', 'polina@gmail.com', '${now}');
       `);
 
@@ -102,7 +103,8 @@ async function initDb() {
         INSERT INTO Tickets (userId, subject, description, status, priority, createdAt) VALUES 
         (1, 'System update', 'Need update', 'new', 'high', '${now}'),
         (2, 'Login issue', 'Cannot login', 'in_progress', 'medium', '${now}'),
-        (3, 'UI Bug', 'Button issue', 'new', 'low', '${now}');
+        (3, 'Wi-Fi', 'Wi-Fi is not working', 'in_progress', 'medium', '${now}'),
+        (4, 'UI Bug', 'Button issue', 'new', 'low', '${now}');
       `);
 
       await run(`

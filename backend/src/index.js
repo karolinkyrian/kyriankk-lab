@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 
 const ticketsRoutes = require("./routes/tickets.routes");
 const usersRoutes = require("./routes/users.routes");
@@ -12,15 +13,34 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
+const allowedOrigins = [
+  "http://localhost:8080", 
+  "http://127.0.0.1:8080",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500"
+];
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error("CORS: origin is not allowed"), false);
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.options("*", cors());
+
 app.get("/health", (req, res) => {
   res.json({
     status: "ok"
   });
 });
 
-app.use("/api/tickets", ticketsRoutes);
-app.use("/api/users", usersRoutes);
-app.use("/api/messages", messagesRoutes);
+app.use("/api/v1/tickets", ticketsRoutes);
+app.use("/api/v1/users", usersRoutes);
+app.use("/api/v1/messages", messagesRoutes);
 
 app.use(errorHandler);
 
