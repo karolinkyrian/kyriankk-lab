@@ -3,96 +3,84 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ЛР1 – Варіант 9</title>
-
+  <title>Кир'ян Кароліна - Варіант 9</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="app.js" defer></script>
+  <script type="module" src="./src/main.js" defer></script>
 </head>
 <body>
 
 <header>
-  <h1>«Заявка в техпідтримку» для студентів</h1>
+  <h1>Заявки в техпідтримку</h1>
 </header>
 
 <main class="container">
+  <div id="notice"></div>
 
-  <section class="form-section">
-    <form id="ticketForm">
+  <div class="content-wrapper">
+    <section class="form-section">
+      <form id="ticketForm">
+        <div class="field">
+          <label for="subjectInput">Тема</label>
+          <input id="subjectInput" type="text" placeholder="Введіть тему..." required />
+        </div>
 
-      <div class="field">
-        <label for="subjectInput">Тема</label>
-        <input id="subjectInput" type="text" />
-        <p class="error-text" id="subjectError"></p>
-      </div>
+        <div class="field">
+          <label for="userSelect">Автор</label>
+          <select id="userSelect" required>
+            <option value="">Завантаження користувачів...</option>
+          </select>
+        </div>
 
-      <div class="field">
-        <label for="statusSelect">Статус</label>
-        <select id="statusSelect">
-          <option value="">Оберіть статус</option>
-          <option value="New">New</option>
-          <option value="InProgress">InProgress</option>
-          <option value="Done">Done</option>
-        </select>
-        <p class="error-text" id="statusError"></p>
-      </div>
+        <div class="field">
+          <label for="statusSelect">Статус</label>
+          <select id="statusSelect" required>
+            <option value="new">New</option>
+            <option value="in_progress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
 
-      <div class="field">
-        <label for="prioritySelect">Пріоритет</label>
-        <select id="prioritySelect">
-          <option value="">Оберіть пріоритет</option>
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-        </select>
-        <p class="error-text" id="priorityError"></p>
-      </div>
+        <div class="field">
+          <label for="prioritySelect">Пріоритет</label>
+          <select id="prioritySelect" required>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
 
-      <div class="field">
-        <label for="messageInput">Опис проблеми</label>
-        <textarea id="messageInput" rows="4"></textarea>
-        <p class="error-text" id="messageError"></p>
-      </div>
+        <div class="field">
+          <label for="messageInput">Опис проблеми</label>
+          <textarea id="messageInput" rows="4" placeholder="Детально опишіть проблему..." required></textarea>
+        </div>
 
-      <div class="field">
-        <label for="authorInput">Автор</label>
-        <input id="authorInput" type="text" />
-        <p class="error-text" id="authorError"></p>
-      </div>
+        <div class="buttons">
+          <button type="submit" id="submitBtn">Зберегти</button>
+          <button type="button" id="resetBtn">Очистити</button>
+          <button type="button" id="cancelEditBtn" style="display:none;">Скасувати ред.</button>
+        </div>
+      </form>
+    </section>
 
-      <div class="buttons">
-        <button type="submit">Зберегти</button>
-        <button type="button" id="resetBtn">Очистити</button>
-      </div>
-
-    </form>
-  </section>
-
-  <section class="table-section">
-
-    <input id="searchInput" type="text" placeholder="Пошук по темі або автору..." />
-
-    <table>
-      <thead>
-        <tr>
-          <th data-field="subject">Тема</th>
-          <th data-field="status">Статус</th>
-          <th data-field="priority">Пріоритет</th>
-          <th data-field="author">Автор</th>
-          <th>Дії</th>
-        </tr>
-      </thead>
-
-      <tbody id="ticketsTable"></tbody>
-    </table>
-
-  </section>
-
+    <section class="table-section">
+      <div id="status-container"></div>
+      <input id="searchInput" type="text" placeholder="Пошук по темі або автору..." />
+      <table>
+        <thead>
+          <tr>
+            <th data-field="subject">Тема</th>
+            <th data-field="status">Статус</th>
+            <th data-field="priority">Пріоритет</th>
+            <th data-field="userName">Автор</th>
+            <th>Дії</th>
+          </tr>
+        </thead>
+        <tbody id="ticketsTable"></tbody>
+      </table>
+    </section>
+  </div>
 </main>
 
 </body>
 </html>
-
-
-
-
 
