@@ -1,23 +1,16 @@
 const express = require("express");
-
-const controller = require(
-  "../controllers/tickets.controller"
-);
+const controller = require("../controllers/tickets.controller");
+const { demoAuth } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
 router.get("/", controller.getAll);
-
 router.get("/full", controller.getFull);
-
 router.get("/stats", controller.getStats);
-
-router.get("/:id", controller.getById);
-
 router.post("/", controller.create);
 
-router.put("/:id", controller.update);
-
-router.delete("/:id", controller.remove);
+router.get("/:id", demoAuth, controller.getById);
+router.put("/:id", demoAuth, controller.update);
+router.delete("/:id", demoAuth, controller.remove);
 
 module.exports = router;

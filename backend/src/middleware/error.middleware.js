@@ -2,6 +2,7 @@ function errorHandler(err, req, res, next) {
   console.error("--- Unexpected Error ---");
   console.error(err); 
   console.error("------------------------");
+  
   if (err.status) {
     return res.status(err.status).json({
       error: err.message || err.error || "Bad Request",
@@ -25,8 +26,10 @@ function errorHandler(err, req, res, next) {
     });
   }
 
+  const isDev = process.env.NODE_ENV !== "production";
   res.status(500).json({
     error: "Internal Server Error",
+    details: isDev ? String(err.message || err) : undefined
   });
 }
 

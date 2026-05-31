@@ -14,8 +14,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 const allowedOrigins = [
-  "http://localhost:8080", 
-  "http://127.0.0.1:8080",
+  "http://localhost:8000", 
+  "http://127.0.0.1:8000",
   "http://localhost:5500",
   "http://127.0.0.1:5500"
 ];
@@ -27,10 +27,17 @@ app.use(cors({
     return cb(new Error("CORS: origin is not allowed"), false);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization", "X-Demo-UserId"]
 }));
 
 app.options("*", cors());
+
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  next();
+});
 
 app.get("/health", (req, res) => {
   res.json({
@@ -44,17 +51,8 @@ app.use("/api/v1/messages", messagesRoutes);
 
 app.use(errorHandler);
 
-async function bootstrap() {
-  try {
-    await initDb();
-
-    app.listen(PORT, () => {
-      console.log(`Server started on http://localhost:${PORT}`);
-    });
-  } catch (err) {
-    console.error("Server startup failed:", err);
-    process.exit(1);
-  }
-}
-
-bootstrap();
+initDb().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+});
