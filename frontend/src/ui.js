@@ -8,9 +8,11 @@ export function renderStatus(status, error = null) {
     const el = document.getElementById("status-container");
     if (!el) return;
     
-    if (status === "loading") el.innerHTML = "Завантаження даних...";
-    else if (status === "empty") el.innerHTML = "Поки що немає жодної заявки.";
-    else if (status === "error") el.innerHTML = `<span style="color:red">Помилка: ${error?.message || "Невідома помилка"}</span>`;
+    if (status === "loading") el.textContent = "Завантаження даних...";
+    else if (status === "empty") el.textContent = "Поки що немає жодної заявки.";
+    else if (status === "error") {
+        el.innerHTML = `<span style="color:red">Помилка: ${error?.message || "Невідома помилка"}</span>`;
+    }
     else el.innerHTML = ""; 
 }
 
@@ -20,7 +22,10 @@ export function renderUsersSelect(users) {
     
     select.innerHTML = '<option value="">Оберіть автора</option>';
     for (const user of users) {
-        select.innerHTML += `<option value="${user.id}">${user.name} (${user.email})</option>`;
+        const option = document.createElement("option");
+        option.value = user.id;
+        option.textContent = `${user.name} (${user.email})`;
+        select.appendChild(option);
     }
 }
 
@@ -33,20 +38,33 @@ export function renderTicketsTable(tickets, onEditCallback, onDeleteCallback) {
     for (const ticket of tickets) {
         const tr = document.createElement("tr");
         
-        tr.innerHTML = `
-            <td>${ticket.subject || "(Без теми)"}</td>
-            <td>${ticket.status || "new"}</td>
-            <td>${ticket.priority || "low"}</td>
-            <td>${ticket.userName || "Невідомий автор"}</td>
-            <td>
-                <button class="edit-btn" data-id="${ticket.id}" style="margin-right: 5px;">Редагувати</button>
-                <button class="delete-btn" data-id="${ticket.id}">Видалити</button>
-            </td>
+        const tdSubject = document.createElement("td");
+        tdSubject.textContent = ticket.subject || "(Без теми)";
+        
+        const tdStatus = document.createElement("td");
+        tdStatus.textContent = ticket.status || "new";
+        
+        const tdPriority = document.createElement("td");
+        tdPriority.textContent = ticket.priority || "low";
+        
+        const tdAuthor = document.createElement("td");
+        tdAuthor.textContent = ticket.userName || "Невідомий автор";
+        
+        const tdActions = document.createElement("td");
+        tdActions.innerHTML = `
+            <button class="edit-btn" data-id="${ticket.id}" style="margin-right: 5px;">Редагувати</button>
+            <button class="delete-btn" data-id="${ticket.id}">Видалити</button>
         `;
+
+        tr.appendChild(tdSubject);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdPriority);
+        tr.appendChild(tdAuthor);
+        tr.appendChild(tdActions);
 
         tr.querySelector(".edit-btn").addEventListener("click", () => onEditCallback(ticket));
         tr.querySelector(".delete-btn").addEventListener("click", () => onDeleteCallback(ticket.id));
-
+        
         tbody.appendChild(tr);
     }
 }

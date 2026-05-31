@@ -44,13 +44,21 @@ export async function createTicket(dto) {
 export async function updateTicket(id, dto) {
     return await request(`/tickets/${encodeURIComponent(id)}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            "Content-Type": "application/json",
+            "X-Demo-UserId": "1" 
+        },
         body: JSON.stringify(dto),
     });
 }
 
 export async function deleteTicket(id) {
-    return await request(`/tickets/${encodeURIComponent(id)}`, { method: "DELETE" });
+    return await request(`/tickets/${encodeURIComponent(id)}`, { 
+        method: "DELETE",
+        headers: {
+            "X-Demo-UserId": "1" 
+        }
+    });
 }
 
 export async function getUsers() {
