@@ -7,7 +7,6 @@ function safeSort(sort) {
   if (ALLOWED_SORT_FIELDS.includes(sort)) return sort;
   return "createdAt";
 }
-
 function safeOrder(order) {
   if (ALLOWED_ORDER.includes(order)) return order;
   return "DESC";
